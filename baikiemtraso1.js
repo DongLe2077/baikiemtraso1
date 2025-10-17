@@ -1,25 +1,21 @@
-class HocSinh {
-  constructor(hoTen, lopHoc, diemTB, hanhKiem, maHS = null) {
-    this.maHS = maHS;
-    this.hoTen = hoTen;
-    this.lopHoc = lopHoc;
-    this.diemTB = diemTB;
-    this.hanhKiem = hanhKiem;
-  }
-}
+const HocSinh = function(hoTen, lopHoc, diemTB, hanhKiem, maHS = null) {
+  this.maHS = maHS;
+  this.hoTen = hoTen;
+  this.lopHoc = lopHoc;
+  this.diemTB = diemTB;
+  this.hanhKiem = hanhKiem;
+};
 
-class SchoolSystem {
-  constructor() {
-    this.danhSach = [];
-    this.soLuongHocSinh = 0;
-  }
+const SchoolSystem = function() {
+  this.danhSach = [];
+  this.soLuongHocSinh = 0;
 
-  khoiTao(data = []) {
+  this.khoiTao = function(data = []) {
     this.danhSach = data;
     this.soLuongHocSinh = data.length;
-  }
+  };
 
-  themHocSinh(hocSinh) {
+  this.themHocSinh = function(hocSinh) {
     const namHienTai = new Date().getFullYear();
     const soThuTu = String(this.soLuongHocSinh).padStart(3, "0");
     const maHS = `ma${namHienTai}${soThuTu}`;
@@ -29,18 +25,18 @@ class SchoolSystem {
     this.soLuongHocSinh++;
 
     return maHS;
-  }
+  };
 
-  timHocSinh(maHS) {
+  this.timHocSinh = function(maHS) {
     const regexMaHS = /^ma\d{7}$/;
     if (!regexMaHS.test(maHS)) {
       return null;
     }
 
     return this.danhSach.find((hs) => hs.maHS === maHS) || null;
-  }
+  };
 
-  capNhatThongTin(maHS, duLieuMoi) {
+  this.capNhatThongTin = function(maHS, duLieuMoi) {
     const index = this.danhSach.findIndex((hs) => hs.maHS === maHS);
 
     if (index === -1) {
@@ -52,9 +48,9 @@ class SchoolSystem {
     this.danhSach[index] = { ...this.danhSach[index], ...thongTinCapNhat };
 
     return true;
-  }
+  };
 
-  xoaHocSinh(maHS) {
+  this.xoaHocSinh = function(maHS) {
     const index = this.danhSach.findIndex((hs) => hs.maHS === maHS);
 
     if (index === -1) {
@@ -63,13 +59,13 @@ class SchoolSystem {
 
     this.danhSach.splice(index, 1);
     return true;
-  }
+  };
 
-  layDanhSachTheoLop(tenLop) {
+  this.layDanhSachTheoLop = function(tenLop) {
     return this.danhSach.filter((hs) => hs.lopHoc === tenLop);
-  }
+  };
 
-  thongKeHocLuc() {
+  this.thongKeHocLuc = function() {
     const thongKe = {
       "Xuất Sắc": 0,
       Giỏi: 0,
@@ -95,9 +91,9 @@ class SchoolSystem {
     });
 
     return thongKe;
-  }
+  };
 
-  sapXepTheoDiem(kieuSapXep = "tang") {
+  this.sapXepTheoDiem = function(kieuSapXep = "tang") {
     const danhSachSaoChep = [...this.danhSach];
 
     return danhSachSaoChep.sort((a, b) => {
@@ -108,8 +104,8 @@ class SchoolSystem {
       }
       return 0;
     });
-  }
-}
+  };
+};
 
 const school = new SchoolSystem();
 
