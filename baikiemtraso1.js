@@ -1,5 +1,6 @@
+// Class đại diện cho Học sinh
 class HocSinh {
-  constructor(maHS, hoTen, lopHoc, diemTB, hanhKiem) {
+  constructor(hoTen, lopHoc, diemTB, hanhKiem, maHS = null) {
     this.maHS = maHS;
     this.hoTen = hoTen;
     this.lopHoc = lopHoc;
@@ -8,227 +9,201 @@ class HocSinh {
   }
 }
 
+// Class Quản lý Trường học
 class SchoolSystem {
-  constructor(data = []) {
-    this.khoiTao(data);
-    console.log(`📋 Đã thêm ${this.soLuongHocSinh} học sinh.`);
+  constructor() {
+    this.danhSach = [];
+    this.soLuongHocSinh = 0;
   }
 
+  // Khởi tạo dữ liệu ban đầu
   khoiTao(data = []) {
-    this.danhSach = data.map(hs => new HocSinh(hs.maHS, hs.hoTen, hs.lopHoc, hs.diemTB, hs.hanhKiem));
-    this.soLuongHocSinh = this.danhSach.length || 0;
+    this.danhSach = data;
+    this.soLuongHocSinh = data.length;
   }
 
-  _sinhMaHS() {
-    const namHienTai = new Date().getFullYear();
-    this.soLuongHocSinh++;
-    return `ma${namHienTai}${String(this.soLuongHocSinh).padStart(3, "0")}`;
-  }
-
-  _isValidMaHS(ma) {
-    return typeof ma === "string" && /^ma\d{7}$/.test(ma);
-  }
-
-  _isValidLopHoc(lop) {
-    return typeof lop === "string" && /^(10|11|12)[A-Z]\d{1}$/.test(lop);
-  }
-
-  _isValidDiem(diem) {
-    return typeof diem === "number" && diem >= 0 && diem <= 10;
-  }
-
-  _isValidHanhKiem(hk) {
-    const danhSachHK = ["Tốt", "Khá", "Trung bình", "Yếu"];
-    return typeof hk === "string" && danhSachHK.includes(hk);
-  }
-
-  _isValidHoTen(hoTen) {
-    return typeof hoTen === "string" && hoTen.trim().length >= 3;
-  }
-
+  // Thêm học sinh mới
   themHocSinh(hocSinh) {
-    if (!this._isValidHoTen(hocSinh.hoTen)) {
-      console.error("❌ Họ tên không hợp lệ! (Phải có ít nhất 3 ký tự)");
-      return null;
-    }
-
-    if (!this._isValidLopHoc(hocSinh.lopHoc)) {
-      console.error(`❌ Lớp học "${hocSinh.lopHoc}" không hợp lệ! (Định dạng: 10A1, 11B2, 12C3,...)`);
-      return null;
-    }
-
-    if (!this._isValidDiem(hocSinh.diemTB)) {
-      console.error(`❌ Điểm trung bình "${hocSinh.diemTB}" không hợp lệ! (Phải từ 0 đến 10)`);
-      return null;
-    }
-
-    if (!this._isValidHanhKiem(hocSinh.hanhKiem)) {
-      console.error(`❌ Hạnh kiểm "${hocSinh.hanhKiem}" không hợp lệ! (Tốt/Khá/Trung bình/Yếu)`);
-      return null;
-    }
-
-    const maHS = this._sinhMaHS();
-    const newStudent = new HocSinh(maHS, hocSinh.hoTen, hocSinh.lopHoc, hocSinh.diemTB, hocSinh.hanhKiem);
-    this.danhSach = [...this.danhSach, newStudent];
+    const namHienTai = new Date().getFullYear();
+    const soThuTu = String(this.soLuongHocSinh).padStart(3, '0');
+    const maHS = `ma${namHienTai}${soThuTu}`;
+    
+    hocSinh.maHS = maHS;
+    this.danhSach.push(hocSinh);
+    this.soLuongHocSinh++;
+    
     return maHS;
   }
 
+  // Tìm học sinh theo mã
   timHocSinh(maHS) {
-    if (!this._isValidMaHS(maHS)) {
-      console.error(`❌ Mã học sinh "${maHS}" không hợp lệ!`);
+    // Kiểm tra định dạng mã học sinh
+    const regexMaHS = /^ma\d{7}$/;
+    if (!regexMaHS.test(maHS)) {
       return null;
     }
-    const result = this.danhSach.find(hs => hs.maHS === maHS) || null;
-    if (!result) {
-      console.warn(`⚠️ Không tìm thấy học sinh có mã "${maHS}"`);
-    }
-    return result;
+    
+    return this.danhSach.find(hs => hs.maHS === maHS) || null;
   }
 
-  capNhatThongTin(maHS, duLieuMoi = {}) {
-    const idx = this.danhSach.findIndex(hs => hs.maHS === maHS);
-    if (idx === -1) {
-      console.error(`❌ Không tìm thấy học sinh có mã "${maHS}" để cập nhật!`);
+  // Cập nhật thông tin học sinh
+  capNhatThongTin(maHS, duLieuMoi) {
+    const index = this.danhSach.findIndex(hs => hs.maHS === maHS);
+    
+    if (index === -1) {
       return false;
     }
+    
+    // Bỏ qua thuộc tính maHS trong duLieuMoi
+    const { maHS: _, ...thongTinCapNhat } = duLieuMoi;
+    
+    // Cập nhật các thuộc tính hợp lệ
+    this.danhSach[index] = { ...this.danhSach[index], ...thongTinCapNhat };
+    
+    return true;
+  }
 
-    if (duLieuMoi.hoTen && !this._isValidHoTen(duLieuMoi.hoTen)) {
-      console.error("❌ Họ tên không hợp lệ!");
+  // Xóa học sinh
+  xoaHocSinh(maHS) {
+    const index = this.danhSach.findIndex(hs => hs.maHS === maHS);
+    
+    if (index === -1) {
       return false;
     }
-    if (duLieuMoi.lopHoc && !this._isValidLopHoc(duLieuMoi.lopHoc)) {
-      console.error(`❌ Lớp học "${duLieuMoi.lopHoc}" không hợp lệ!`);
-      return false;
-    }
-    if (duLieuMoi.diemTB !== undefined && !this._isValidDiem(duLieuMoi.diemTB)) {
-      console.error(`❌ Điểm trung bình "${duLieuMoi.diemTB}" không hợp lệ!`);
-      return false;
-    }
-    if (duLieuMoi.hanhKiem && !this._isValidHanhKiem(duLieuMoi.hanhKiem)) {
-      console.error(`❌ Hạnh kiểm "${duLieuMoi.hanhKiem}" không hợp lệ!`);
-      return false;
-    }
+    
+    this.danhSach.splice(index, 1);
+    return true;
+  }
 
-    const { maHS: _, ...dataToUpdate } = duLieuMoi;
-    Object.keys(dataToUpdate).forEach(key => {
-      if (this.danhSach[idx].hasOwnProperty(key)) {
-        this.danhSach[idx][key] = dataToUpdate[key];
+  // Lấy danh sách học sinh theo lớp
+  layDanhSachTheoLop(tenLop) {
+    return this.danhSach.filter(hs => hs.lopHoc === tenLop);
+  }
+
+  // Thống kê học lực
+  thongKeHocLuc() {
+    const thongKe = {
+      'Xuất Sắc': 0,
+      'Giỏi': 0,
+      'Khá': 0,
+      'Trung Bình': 0,
+      'Kém': 0
+    };
+    
+    this.danhSach.forEach(hs => {
+      const { diemTB } = hs;
+      
+      if (diemTB >= 9.0) {
+        thongKe['Xuất Sắc']++;
+      } else if (diemTB >= 8.0) {
+        thongKe['Giỏi']++;
+      } else if (diemTB >= 6.5) {
+        thongKe['Khá']++;
+      } else if (diemTB >= 5.0) {
+        thongKe['Trung Bình']++;
+      } else {
+        thongKe['Kém']++;
       }
     });
-    return true;
-  }
-
-  xoaHocSinh(maHS) {
-    if (!this._isValidMaHS(maHS)) {
-      console.error(`❌ Mã học sinh "${maHS}" không hợp lệ!`);
-      return false;
-    }
-    const lengthBefore = this.danhSach.length;
-    this.danhSach = this.danhSach.filter(hs => hs.maHS !== maHS);
-    if (this.danhSach.length === lengthBefore) {
-      console.warn(`⚠️ Không tìm thấy học sinh có mã "${maHS}" để xóa!`);
-      return false;
-    }
-    return true;
-  }
-
-  layDanhSachTheoLop(tenLop) {
-    if (!this._isValidLopHoc(tenLop)) {
-      console.error(`❌ Tên lớp "${tenLop}" không hợp lệ! (Định dạng: 10A1, 11B2, 12C3,...)`);
-      return [];
-    }
-    const result = this.danhSach.filter(({ lopHoc }) => lopHoc === tenLop);
-    if (result.length === 0) {
-      console.warn(`⚠️ Không tìm thấy học sinh nào ở lớp "${tenLop}"`);
-    }
-    return result;
-  }
-
-  thongKeHocLuc() {
-    if (this.danhSach.length === 0) {
-      console.warn("⚠️ Danh sách học sinh trống!");
-      return { xuatSac: 0, gioi: 0, kha: 0, trungBinh: 0, kem: 0 };
-    }
-    const thongKe = { xuatSac: 0, gioi: 0, kha: 0, trungBinh: 0, kem: 0 };
-    this.danhSach.forEach(({ diemTB }) => {
-      if (diemTB >= 9) thongKe.xuatSac++;
-      else if (diemTB >= 8) thongKe.gioi++;
-      else if (diemTB >= 6.5) thongKe.kha++;
-      else if (diemTB >= 5) thongKe.trungBinh++;
-      else thongKe.kem++;
-    });
+    
     return thongKe;
   }
 
-  sapXepTheoDiem(kieuSapXep = "giam") {
-    if (!["tang", "giam"].includes(kieuSapXep)) {
-      console.error(`❌ Kiểu sắp xếp "${kieuSapXep}" không hợp lệ! (Chỉ chấp nhận: 'tang' hoặc 'giam')`);
-      return [];
-    }
-    const banSao = [...this.danhSach];
-    banSao.sort((a, b) => kieuSapXep === "tang" ? a.diemTB - b.diemTB : b.diemTB - a.diemTB);
-    return banSao;
+  // Sắp xếp theo điểm
+  sapXepTheoDiem(kieuSapXep = 'tang') {
+    const danhSachSaoChep = [...this.danhSach];
+    
+    return danhSachSaoChep.sort((a, b) => {
+      if (kieuSapXep === 'tang') {
+        return a.diemTB - b.diemTB;
+      } else if (kieuSapXep === 'giam') {
+        return b.diemTB - a.diemTB;
+      }
+      return 0;
+    });
   }
 }
 
+// ===== VÍ DỤ SỬ DỤNG =====
+
+// Khởi tạo hệ thống
+const school = new SchoolSystem();
+
+// Dữ liệu ban đầu
 const duLieuBanDau = [
-  { maHS: "ma2025001", hoTen: "Nguyễn Văn An", lopHoc: "10A1", diemTB: 8.5, hanhKiem: "Tốt" },
-  { maHS: "ma2025002", hoTen: "Trần Thị Bình", lopHoc: "10A1", diemTB: 9.2, hanhKiem: "Tốt" },
-  { maHS: "ma2025003", hoTen: "Lê Văn Cường", lopHoc: "10A2", diemTB: 7.0, hanhKiem: "Khá" },
-  { maHS: "ma2025004", hoTen: "Phan Thị Duyên", lopHoc: "10A2", diemTB: 5.5, hanhKiem: "Trung bình" },
-  { maHS: "ma2025005", hoTen: "Võ Văn Hùng", lopHoc: "10A3", diemTB: 4.0, hanhKiem: "Yếu" },
-  { maHS: "ma2025006", hoTen: "Đặng Thị Lan", lopHoc: "10A3", diemTB: 6.8, hanhKiem: "Khá" },
-  { maHS: "ma2025007", hoTen: "Bùi Văn Minh", lopHoc: "10A1", diemTB: 8.0, hanhKiem: "Tốt" },
-  { maHS: "ma2025008", hoTen: "Ngô Thị Nga", lopHoc: "10A2", diemTB: 7.5, hanhKiem: "Khá" },
+  new HocSinh('Nguyễn Văn A', '10A1', 8.5, 'Tốt', 'ma2025000'),
+  new HocSinh('Trần Thị B', '10A1', 9.2, 'Tốt', 'ma2025001'),
+  new HocSinh('Lê Văn C', '10A2', 6.8, 'Khá', 'ma2025002'),
+  new HocSinh('Phạm Thị D', '10A2', 4.5, 'Trung bình', 'ma2025003'),
+  new HocSinh('Nguyễn Thị X', '10A3', 5.5, 'Trung bình', 'ma2025004'),
+  new HocSinh('Võ Văn H', '10A3', 4.0, 'Yếu', 'ma2025005'),
 ];
 
-const school = new SchoolSystem(duLieuBanDau);
+school.khoiTao(duLieuBanDau);
 
-const ma1 = school.themHocSinh({ hoTen: "Phạm Thị Dung", lopHoc: "10A1", diemTB: 9.5, hanhKiem: "Tốt" });
-const ma2 = school.themHocSinh({ hoTen: "Hoàng Văn Em", lopHoc: "10A2", diemTB: 4.5, hanhKiem: "Trung bình" });
-console.log(`✅ Đã thêm học sinh có mã: ${ma1}`);
-console.log(`✅ Đã thêm học sinh có mã: ${ma2}`);
-school.themHocSinh({ hoTen: "AB", lopHoc: "10A1", diemTB: 8.0, hanhKiem: "Tốt" });
-school.themHocSinh({ hoTen: "Trần Văn Kiên", lopHoc: "13A1", diemTB: 8.0, hanhKiem: "Tốt" });
-school.themHocSinh({ hoTen: "Nguyễn Văn Long", lopHoc: "10A1", diemTB: 11, hanhKiem: "Tốt" });
-school.themHocSinh({ hoTen: "Lê Thị Mai", lopHoc: "10A1", diemTB: 8.0, hanhKiem: "Xuất sắc" });
+console.log('=== KHỞI TẠO HỆ THỐNG ===');
+console.log(`Số lượng học sinh: ${school.soLuongHocSinh}`);
+console.log('\nDanh sách học sinh ban đầu:');
+school.danhSach.forEach(hs => {
+  console.log(`${hs.maHS} | ${hs.hoTen} | Lớp: ${hs.lopHoc} | Điểm TB: ${hs.diemTB} | Hạnh kiểm: ${hs.hanhKiem}`);
+});
 
-console.log("\n📋 DANH SÁCH TẤT CẢ HỌC SINH:");
-console.table(school.danhSach);
+// Thêm học sinh mới
+console.log('\n=== THÊM HỌC SINH MỚI ===');
+const hsMoi = new HocSinh('Hoàng Văn E', '10A1', 7.5, 'Tốt');
+const maMoi = school.themHocSinh(hsMoi);
+console.log(`Đã thêm học sinh với mã: ${maMoi}`);
+const hsMoi2 = new HocSinh('Đặng Thị F', '10A2', 8.8, 'Tốt');
+const maMoi2 = school.themHocSinh(hsMoi2);
+console.log(`Đã thêm học sinh với mã: ${maMoi2}`);
 
-console.log(school.timHocSinh("ma2025001"));
-school.timHocSinh("ma2025999");
-school.timHocSinh("abc123");
+const hsMoi3 = new HocSinh('Bùi Văn G', '10A3', 6.2, 'Khá');
+const maMoi3 = school.themHocSinh(hsMoi3);
+console.log(`Đã thêm học sinh với mã: ${maMoi3}`);
 
-school.capNhatThongTin("ma2025003", { diemTB: 8.0, hanhKiem: "Tốt" });
-console.log("\n📝 THÔNG TIN SAU CẬP NHẬT:");
-console.log(school.timHocSinh("ma2025003"));
+// Tìm học sinh
+console.log('\n=== TÌM HỌC SINH ===');
+const hsTimThay = school.timHocSinh('ma2025001');
+console.log('Tìm thấy:', hsTimThay);
 
-school.capNhatThongTin("ma2025003", { diemTB: 15 });
-school.capNhatThongTin("ma2025003", { lopHoc: "13A1" });
+// Cập nhật thông tin
+console.log('\n=== CẬP NHẬT THÔNG TIN ===');
+const ketQuaCapNhat = school.capNhatThongTin('ma2025000', {
+  diemTB: 9.0,
+  hanhKiem: 'Xuất sắc'
+});
+console.log(`Cập nhật thành công: ${ketQuaCapNhat}`);
 
-console.log("\n📚 DANH SÁCH THEO LỚP:");
-console.log('Danh sach lớp "10A1":');
-console.table(school.layDanhSachTheoLop("10A1"));
-console.log('Danh sach lớp "13A1":');
-school.layDanhSachTheoLop("13A1");
-console.log('Danh sach lớp "10A2":');    
-console.table(school.layDanhSachTheoLop("10A2"));
+// Danh sách theo lớp
+console.log('\n=== DANH SÁCH LỚP  ===');
+console.log("Danh sách lớp 10A1: ")
+const lop10A1 = school.layDanhSachTheoLop('10A1');
+console.log(lop10A1);
+console.log("Danh sách lớp 10A2: ");
+const lop10A2 = school.layDanhSachTheoLop('10A2');
+console.log(lop10A2);
 
-console.log("\n📊 THỐNG KÊ HỌC LỰC:");
-console.log(school.thongKeHocLuc());
+// Thống kê học lực
+console.log('\n=== THỐNG KÊ HỌC LỰC ===');
+const thongKe = school.thongKeHocLuc();
+console.log(thongKe);
 
-console.log("\n📉 SẮP XẾP THEO ĐIỂM:");
-console.log("Sắp xếp giảm dần:");
-console.table(school.sapXepTheoDiem("giam"));
-console.log("Sắp xếp tăng dần:");
-console.table(school.sapXepTheoDiem("tang"));
-school.sapXepTheoDiem("khac");
+// Sắp xếp theo điểm
+console.log('\n=== SẮP XẾP THEO ĐIỂM  ===');
+console.log("Sắp xếp điểm tăng dần: ");
+const dsSapXepTang = school.sapXepTheoDiem('tang');
+dsSapXepTang.forEach(hs => {
+  console.log(`${hs.hoTen} - ${hs.lopHoc}: ${hs.diemTB} điểm`);
+});
 
-const ketQuaXoa = school.xoaHocSinh("ma2025002");
-console.log(ketQuaXoa ? "\n✅ Xóa thành công" : "\n❌ Không tìm thấy");
-school.xoaHocSinh("ma2025999");
-school.xoaHocSinh("abc123");
+console.log("\nSắp xếp điểm giảm dần: ");
+const dsSapXepGiam = school.sapXepTheoDiem('giam');
+dsSapXepGiam.forEach(hs => {
+  console.log(`${hs.hoTen} - ${hs.lopHoc}: ${hs.diemTB} điểm`);
+});
 
-console.log("\n📋 DANH SÁCH SAU KHI XÓA:");
-console.table(school.danhSach);
+// Xóa học sinh
+console.log('\n=== XÓA HỌC SINH ===');
+const ketQuaXoa = school.xoaHocSinh('ma2025003');
+console.log(`Xóa thành công: ${ketQuaXoa}`);
+console.log(`Số lượng học sinh còn lại: ${school.danhSach.length}`);
