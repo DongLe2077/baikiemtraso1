@@ -185,3 +185,10 @@ console.log("\n=== XÓA HỌC SINH ===");
 const ketQuaXoa = school.xoaHocSinh("ma2025003");
 console.log(`Xóa thành công: ${ketQuaXoa}`);
 console.log(`Số lượng học sinh còn lại: ${school.danhSach.length}`);
+
+console.log("\nDanh sách học sinh sau khi xóa:");
+school.danhSach.forEach((hs) => {
+  console.log(
+    `${hs.maHS} | ${hs.hoTen} | Lớp: ${hs.lopHoc} | Điểm TB: ${hs.diemTB} | Hạnh kiểm: ${hs.hanhKiem}`
+  );
+});
